@@ -126,6 +126,8 @@ tags: [LaTeX, Lecture Note, CTeX, XeLaTeX]
 
 \definecolor{brand}{HTML}{5B8CFF}
 \definecolor{brandD}{HTML}{2F54EB}
+\definecolor{themegreen}{HTML}{1DBA8C}
+\definecolor{themegreenD}{HTML}{178A69}
 \definecolor{ink}{HTML}{1A1A1A}
 \definecolor{keybg}{HTML}{EFF4FF}
 \definecolor{keydark}{HTML}{1F3C88}
@@ -140,7 +142,7 @@ tags: [LaTeX, Lecture Note, CTeX, XeLaTeX]
 \definecolor{secblue}{HTML}{365CFF}
 \definecolor{thmBg}{RGB}{240,245,255}
 \definecolor{lemBg}{RGB}{255,242,242}
-\definecolor{defBg}{RGB}{240,247,255}
+\definecolor{defBg}{RGB}{235,248,242}
 
 \hypersetup{
   colorlinks=true,
@@ -212,8 +214,8 @@ tags: [LaTeX, Lecture Note, CTeX, XeLaTeX]
   \markright{#2}%
   \begin{tcolorbox}[
     cn-panel,
-    colback=keybg,
-    colframe=brandD,
+    colback=white,
+    colframe=brandD!35!white,
     borderline west={4pt}{0pt}{accent}
   ]
     {\sffamily\small\color{ink!60} #4 \hfill #5}\par
@@ -272,10 +274,10 @@ tags: [LaTeX, Lecture Note, CTeX, XeLaTeX]
 \newtheorem{remark}[theorem]{注}
 
 \tcolorboxenvironment{theorem}{cn-panel,colback=thmBg,colframe=secblue,borderline west={3pt}{0pt}{secblue}}
-\tcolorboxenvironment{lemma}{cn-panel,colback=lemBg,colframe=accentD,borderline west={3pt}{0pt}{accentD}}
+\tcolorboxenvironment{lemma}{cn-panel,colback=lemBg,colframe=xhsRed,borderline west={3pt}{0pt}{xhsRed}}
 \tcolorboxenvironment{proposition}{cn-panel,colback=thmBg,colframe=brandD,borderline west={3pt}{0pt}{brandD}}
-\tcolorboxenvironment{corollary}{cn-panel,colback=defBg,colframe=brand,borderline west={3pt}{0pt}{brand}}
-\tcolorboxenvironment{definition}{cn-soft=brandD,title=\textbf{定义},fonttitle=\bfseries,coltitle=brandD}
+\tcolorboxenvironment{corollary}{cn-panel,colback=thmBg,colframe=brand,borderline west={3pt}{0pt}{brand}}
+\tcolorboxenvironment{definition}{cn-soft=themegreenD,colback=defBg,title=\textbf{定义},fonttitle=\bfseries,coltitle=themegreenD}
 \tcolorboxenvironment{remark}{cn-soft=accentD,title=\textbf{注},fonttitle=\bfseries,coltitle=accentD}
 
 \DeclareMathOperator{\diam}{diam}

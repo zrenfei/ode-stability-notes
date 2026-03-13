@@ -123,6 +123,8 @@ tags: [LaTeX, Article, Expository, XeLaTeX]
 
 \definecolor{brand}{HTML}{5B8CFF}
 \definecolor{brandD}{HTML}{2F54EB}
+\definecolor{themegreen}{HTML}{1DBA8C}
+\definecolor{themegreenD}{HTML}{178A69}
 \definecolor{ink}{HTML}{1A1A1A}
 \definecolor{keybg}{HTML}{EFF4FF}
 \definecolor{keydark}{HTML}{1F3C88}
@@ -137,7 +139,7 @@ tags: [LaTeX, Article, Expository, XeLaTeX]
 \definecolor{secblue}{HTML}{365CFF}
 \definecolor{thmBg}{RGB}{240,245,255}
 \definecolor{lemBg}{RGB}{255,242,242}
-\definecolor{defBg}{RGB}{240,247,255}
+\definecolor{defBg}{RGB}{235,248,242}
 
 \hypersetup{
   colorlinks=true,
@@ -206,7 +208,7 @@ tags: [LaTeX, Article, Expository, XeLaTeX]
 \newcommand{\MakeArticleHeader}[5]{%
   \begin{tcolorbox}[
     en-card,
-    colback=keybg,
+    colback=white,
     colframe=brandD!25!white,
     borderline west={4pt}{0pt}{accent}
   ]
@@ -259,10 +261,10 @@ tags: [LaTeX, Article, Expository, XeLaTeX]
 \newtheorem{remark}[theorem]{Remark}
 
 \tcolorboxenvironment{theorem}{en-card,colback=thmBg,colframe=secblue,borderline west={3pt}{0pt}{secblue}}
-\tcolorboxenvironment{lemma}{en-card,colback=lemBg,colframe=accentD,borderline west={3pt}{0pt}{accentD}}
+\tcolorboxenvironment{lemma}{en-card,colback=lemBg,colframe=xhsRed,borderline west={3pt}{0pt}{xhsRed}}
 \tcolorboxenvironment{proposition}{en-card,colback=thmBg,colframe=brandD,borderline west={3pt}{0pt}{brandD}}
-\tcolorboxenvironment{corollary}{en-card,colback=defBg,colframe=brand,borderline west={3pt}{0pt}{brand}}
-\tcolorboxenvironment{definition}{en-soft=brandD,title=\textbf{Definition},fonttitle=\bfseries,coltitle=brandD}
+\tcolorboxenvironment{corollary}{en-card,colback=thmBg,colframe=brand,borderline west={3pt}{0pt}{brand}}
+\tcolorboxenvironment{definition}{en-soft=themegreenD,colback=defBg,title=\textbf{Definition},fonttitle=\bfseries,coltitle=themegreenD}
 \tcolorboxenvironment{remark}{en-soft=accentD,title=\textbf{Remark},fonttitle=\bfseries,coltitle=accentD}
 
 \DeclareMathOperator{\Var}{Var}

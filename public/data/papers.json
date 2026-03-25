@@ -3,7 +3,7 @@
     { 
       "id": "gen-ai", 
       "title": "Generative AI", 
-      "count": 12, 
+      "count": 13, 
       "desc": "Diffusion, GANs, VAEs." 
     },
     { 
@@ -15,6 +15,13 @@
   ],
   "lists": {
     "gen-ai": [
+      {
+        "title": "LeWorldModel / SIGReg：为什么不会塌缩？",
+        "authors": "Maes et al., 2026",
+        "tags": ["World Model", "JEPA", "Note"],
+        "read": true,
+        "filePath": "public/data/papers/leworldmodel_sigreg.md"
+      },
       { 
         "title": "Denoising Diffusion Probabilistic Models", 
         "authors": "Ho et al., 2020", 

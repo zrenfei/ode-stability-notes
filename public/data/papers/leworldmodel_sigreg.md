@@ -3,19 +3,21 @@ title: "LeWorldModel / SIGReg：为什么不会塌缩？"
 date: 2026-03-25
 categories: ["Generative AI"]
 tags: ["World Model", "SIGReg", "Latent Planning", "JEPA"]
-description: "把 LeWorldModel 的核心训练目标、SIGReg 的 anti-collapse 机制，以及 latent planning 的基本思路整理成一篇可直接阅读的 markdown 笔记。"
+description: "这篇笔记只想讲清三件事：LeWorldModel 在学什么，SIGReg 为什么能防塌缩，以及 latent planning 实际在优化什么。"
 ---
 
-## 原文链接
+## 资料
 
-- 论文原文（arXiv）：[LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels](https://arxiv.org/abs/2603.19312)
-- 论文 PDF：[https://arxiv.org/pdf/2603.19312v1](https://arxiv.org/pdf/2603.19312v1)
-- 本站归档 PDF：[diffusion_fud-20.pdf](public/data/papers/source/diffusion_fud-20.pdf)
+1. 论文原文（arXiv）：[LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels](https://arxiv.org/abs/2603.19312)
+2. 论文 PDF：[arXiv PDF](https://arxiv.org/pdf/2603.19312v1)
+3. 本站整理版 PDF：[leworldmodel_sigreg.pdf](public/data/papers/source/leworldmodel_sigreg.pdf)
 
-> 世界模型的基本想法是：根据当前状态和所采取的动作，预测世界在下一个时刻的状态。  
-> LeWorldModel 属于 JEPA 路线：不重建像素，而是直接预测下一步 latent。
+## 0. 先讲结论
 
-## 世界模型
+> LeWorldModel 的关键不在“把像素预测准”，而在于学出一个既能滚动预测、又能拿来规划、同时不会塌成一个点的 latent dynamics。  
+> 它一边用 prediction loss 学动力学，一边用 SIGReg 约束 latent 的整体几何。
+
+## 1. 世界模型在这里做什么
 
 世界模型的核心想法很简单：给定当前状态与动作，学习环境如何演化。围绕这个目标，已经衍生出了很多路线；有些工作会把“预测视频下一帧”也算作世界模型的一部分。
 
@@ -23,17 +25,16 @@ JEPA 路线则更进一步：先把高维观测压缩到 latent 空间，再在 
 
 LeWorldModel 的目标，就是从原始像素端到端学出一个既可预测、又可规划、同时不会塌缩的 latent world model。
 
-## LeWorldModel
+## 2. LeWorldModel 的训练目标
 
 **训练目标**
 
 $$
-z_t = \mathrm{enc}_\theta(o_t), \quad \hat z_{t+1} = \mathrm{pred}_\phi(z_t, a_t).
+z_t = \mathrm{enc}_{\theta}(o_t), \quad \hat z_{t+1} = \mathrm{pred}_{\phi}(z_t, a_t).
 $$
 
 $$
-\mathcal{L}_{\mathrm{pred}} = \frac{1}{T-1}\sum_{t=1}^{T-1} \|\hat z_{t+1} - z_{t+1}\|_2^2, \quad
-\mathcal{L}_{\mathrm{LeWM}} = \mathcal{L}_{\mathrm{pred}} + \lambda\, \mathrm{SIGReg}(Z).
+\mathcal{L}_{\mathrm{pred}} = \frac{1}{T-1}\sum_{t=1}^{T-1} \|\hat z_{t+1} - z_{t+1}\|_2^2, \quad \mathcal{L}_{\mathrm{LeWM}} = \mathcal{L}_{\mathrm{pred}} + \lambda\,\mathrm{SIGReg}(Z).
 $$
 
 这里：
@@ -43,7 +44,7 @@ $$
 - $z_t$ 可以理解为时刻 $t$ 的 latent 状态。
 - $\hat z_{t+1}$ 是 world model 对下一时刻 latent 的预测。
 
-## 为什么 next-latent prediction 会塌缩
+## 3. 为什么 next-latent prediction 会塌缩
 
 假设 encoder 把所有观测都映射到同一个常向量 $c$，即
 
@@ -61,7 +62,7 @@ $$
 
 一旦发生点塌缩，所有状态在 latent 空间中都不可区分。当前状态、目标状态、预测终点都会落在同一个点上，于是任何动作序列看起来都同样合理，规划也就失去了意义。
 
-## SIGReg：如何防止塌缩
+## 4. SIGReg 怎么把塌缩挡住
 
 记 latent 样本矩阵为
 
@@ -100,20 +101,20 @@ $$
 - 低秩表示会被排除；
 - 强相关表示也会被排除。
 
-## Latent Planning
+## 5. Latent planning 实际在优化什么
 
 训练结束后，固定 encoder 与 predictor。
 
 给定当前观测 $o_1$ 和目标观测 $o_g$，先编码为
 
 $$
-\hat z_1 = \mathrm{enc}_\theta(o_1), \quad z_g = \mathrm{enc}_\theta(o_g).
+\hat z_1 = \mathrm{enc}_{\theta}(o_1), \quad z_g = \mathrm{enc}_{\theta}(o_g).
 $$
 
 然后在 latent 空间里滚动预测：
 
 $$
-\hat z_{t+1} = \mathrm{pred}_\phi(\hat z_t, a_t), \quad t = 1, \ldots, H - 1.
+\hat z_{t+1} = \mathrm{pred}_{\phi}(\hat z_t, a_t), \quad t = 1, \ldots, H - 1.
 $$
 
 规划目标是
@@ -129,9 +130,12 @@ $$
 - 用 CEM 在动作序列空间里反复采样、筛选、更新；
 - 用 MPC 持续重规划，减轻长时滚动预测造成的模型误差累积。
 
-## Takeaway
+## 6. Takeaway
 
-> LeWorldModel 先用预测损失学习动作条件下的 latent dynamics，再用 SIGReg 给 latent 空间施加 anti-collapse 的分布几何约束；最后在冻结的 latent dynamics 上做 planning，搜索一串动作，让预测终点尽可能到达目标 latent。
+> 可以把它理解成三步：  
+> 先在 latent 空间里学“动作会把状态推到哪里”；  
+> 再用 SIGReg 保证这个 latent 空间不是一个塌缩伪解；  
+> 最后在冻结的 dynamics 上直接搜索动作序列。
 
 ## 参考文献
 

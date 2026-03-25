@@ -66,6 +66,7 @@
         .prose p { margin-bottom: 1.25rem; line-height: 1.75; color: #44403c; }
         .prose blockquote { border-left: 4px solid #1e3a8a; padding-left: 1rem; font-style: italic; background: #f0f9ff; padding: 1rem; border-radius: 0 0.5rem 0.5rem 0; margin: 1.5rem 0; }
         .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.25rem; }
+        .prose ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 1.25rem; }
         .prose li { margin-bottom: 0.5rem; }
         .prose .template-gallery {
             display: grid;
@@ -199,7 +200,7 @@
 
         function detectNeeds(body) {
           const needsCode = /```/.test(body);
-          const needsMath = /\$\$[\s\S]+?\$\$|\$[^$\n]+?\$/.test(body);
+          const needsMath = /\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)/.test(body);
           return { needsCode, needsMath };
         }
 
@@ -895,8 +896,12 @@ const Icon = memo(({ name, size = 20, strokeWidth = 2, className, ...props }) =>
               // 3) 空闲时做重活：公式渲染、代码高亮
               const runHeavy = async () => {
                 if (cancelled) return;
+                const rawText = root.textContent || "";
+                const shouldRenderMath =
+                  state.needsMath ||
+                  /\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)/.test(rawText);
 
-                if (state.needsMath) {
+                if (shouldRenderMath) {
                   await ensureKatex();
                   if (cancelled) return;
                   if (window.renderMathInElement) {

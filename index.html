@@ -229,16 +229,55 @@
           return { meta, body };
         }
 
+        function protectMathSegments(text) {
+          const segments = [];
+          const makeToken = (index) => `MATHSEGMENTTOKEN${index}END`;
+
+          let protectedText = text.replace(/\$\$[\s\S]+?\$\$/g, (match) => {
+            const token = makeToken(segments.length);
+            segments.push(match);
+            return token;
+          });
+
+          protectedText = protectedText.replace(/\\\[[\s\S]+?\\\]/g, (match) => {
+            const token = makeToken(segments.length);
+            segments.push(match);
+            return token;
+          });
+
+          protectedText = protectedText.replace(/\\\([\s\S]+?\\\)/g, (match) => {
+            const token = makeToken(segments.length);
+            segments.push(match);
+            return token;
+          });
+
+          protectedText = protectedText.replace(/(^|[^\\])(\$[^$\n]+?\$)/gm, (match, prefix, math) => {
+            const token = makeToken(segments.length);
+            segments.push(math);
+            return `${prefix}${token}`;
+          });
+
+          return { text: protectedText, segments };
+        }
+
+        function restoreMathSegments(text, segments) {
+          return segments.reduce((acc, segment, index) => {
+            const token = `MATHSEGMENTTOKEN${index}END`;
+            return acc.split(token).join(segment);
+          }, text);
+        }
+
         // ✅ 文章缓存（提升点击进入速度）
         const ARTICLE_CACHE = window.__ARTICLE_CACHE__ || (window.__ARTICLE_CACHE__ = new Map());
         const ARTICLE_FETCH_PROMISES = window.__ARTICLE_FETCH_PROMISES__ || (window.__ARTICLE_FETCH_PROMISES__ = new Map());
+        const ARTICLE_PARSE_VERSION = 3;
 
         async function fetchArticleRecord(filePath) {
           const normalizedPath = normalizeContentPath(filePath);
           if (!normalizedPath) throw new Error("No file path specified.");
 
           const cached = ARTICLE_CACHE.get(normalizedPath);
-          if (cached?.body) return cached;
+          if (cached?.body && cached.parseVersion === ARTICLE_PARSE_VERSION) return cached;
 
           if (ARTICLE_FETCH_PROMISES.has(normalizedPath)) return ARTICLE_FETCH_PROMISES.get(normalizedPath);
 
@@ -250,7 +289,7 @@
             const { needsCode, needsMath } = detectNeeds(body);
 
             const existing = ARTICLE_CACHE.get(normalizedPath) || {};
-            const record = { ...existing, text, meta, body, needsCode, needsMath };
+            const record = { ...existing, text, meta, body, needsCode, needsMath, parseVersion: ARTICLE_PARSE_VERSION };
             ARTICLE_CACHE.set(normalizedPath, record);
             return record;
           })().finally(() => {
@@ -767,7 +806,7 @@ const Icon = memo(({ name, size = 20, strokeWidth = 2, className, ...props }) =>
                         if (ignore) return;
 
                         // ✅ 如果已解析过 HTML，直接用缓存（秒开）
-                        if (record.html) {
+                        if (record.html && record.parseVersion === ARTICLE_PARSE_VERSION) {
                           setState({
                             content: record.html,
                             frontmatter: record.meta,
@@ -823,16 +862,18 @@ const Icon = memo(({ name, size = 20, strokeWidth = 2, className, ...props }) =>
                             `;
                         };
 
-                        const html = m.parse(record.body, { renderer });
+                        const protectedMath = protectMathSegments(record.body);
+                        const html = m.parse(protectedMath.text, { renderer });
 
                         const clean = window.DOMPurify
                           ? window.DOMPurify.sanitize(html, { ADD_TAGS: ['button'], ADD_ATTR: ['data-code'] })
                           : html;
 
-                        const annotated = annotateHeadings(clean);
+                        const restored = restoreMathSegments(clean, protectedMath.segments);
+                        const annotated = annotateHeadings(restored);
 
                         // ✅ 写入缓存
-                        ARTICLE_CACHE.set(filePath, { ...record, html: annotated.html, headings: annotated.headings });
+                        ARTICLE_CACHE.set(filePath, { ...record, html: annotated.html, headings: annotated.headings, parseVersion: ARTICLE_PARSE_VERSION });
 
                         if (ignore) return;
                         setState({
